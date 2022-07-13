@@ -887,8 +887,8 @@ def listtodict(list):
 
 
 def richiestaCred():
-    usernameStringa = ""
-    passwordStringa = ""
+    usernameStringa = "admin"
+    passwordStringa = "password"
 
     usernameStringa = hashlib.md5(usernameStringa.encode('UTF-8'))
     passwordStringa = hashlib.md5(passwordStringa.encode('UTF-8'))
@@ -1286,7 +1286,16 @@ def getinifilepath(condid):
 
             
     return (results)
-    
+
+def getfilespath(base):
+    results = []
+    for (dirpath, dirnames, filenames) in walk(base):
+        for fname in filenames:
+            
+            results.append( base + "/" + fname)
+    return (results)
+  
+  
 def getsontexmeterstype(condid):
     mydb = mysql.connector.connect(
         host=conf.sqlhost,

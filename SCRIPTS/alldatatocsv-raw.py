@@ -5,9 +5,9 @@ condID = 101050
 today = "202201"
 mydb = mysql.connector.connect(
     host="192.168.88.150",
-    user="root",
-    password="1!Cscsql",
-    database="raf_db",
+    user="",
+    password="",
+    database="",
     allow_local_infile=True
 )
 mycursor = mydb.cursor()

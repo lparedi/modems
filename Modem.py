@@ -1,10 +1,10 @@
 
-from asyncio.proactor_events import _ProactorBaseWritePipeTransport
+
 import http.client
 from datetime import date
 from datetime import datetime
 from pprint import pprint
-from threading import get_ident
+
 
 from numpy import count_nonzero
 from termcolor import colored
@@ -12,6 +12,8 @@ import binascii
 import meterbus
 import base64
 from Crypto.Cipher import AES
+import codecs
+
 # import commonfunctions
 # from commonfunctions import *
 debug = 1
@@ -31,7 +33,7 @@ class Modem:
     AesKey = ""
     Special = ""
 
-    def __init__(self, modemnumber,restserver,authstring,trytoguess,MetersType = [] , AesKey = "",Special = ''):
+    def __init__(self, modemnumber,restserver,authstring,trytoguess,MetersType = [] , AesKey = "",Special = '0'):
         self.Modemnumber = modemnumber
         self.RestServer = restserver
         self.AuthString = authstring
@@ -208,7 +210,7 @@ class Modem:
                     self.Telegrams.remove(telegram)
                     continue
                 
-                if not self.extractmeterfromtelegram(telegram) in ExceptSpecialConf and self.Special != "0":
+                if (not self.extractmeterfromtelegram(telegram) in ExceptSpecialConf) and self.Special != "0":
                     
                     
                     if self.Special =="7x9cf2imp" and  (tg.body.bodyHeader.interpreted["medium"] == "0x4" or tg.body.bodyHeader.interpreted["medium"] == "0xc")  :
@@ -344,12 +346,13 @@ class Modem:
                             self.Telegrams.remove(telegram)
 
                     else:
+                        print("Removing Telegram Sontex " + telegram)
                         self.Telegrams.remove(telegram)
                         
-                    continue
+                    #continue
 
 
-               
+                #exit(0)
                 try:
                     if  ("566" in  self.MetersType[0][0] or self.MetersType[0][1] == 1):#  and tg.body.bodyHeader.interpreted["medium"] == "0x8": #tg.interpreted['body']['header']['medium'] == "0x8" :
                         if debug == 1:
@@ -479,37 +482,13 @@ class Modem:
                         rdecoded["SetDay"] = tg.body.interpreted["records"][int(setdayrc)]["value"]
                         SetDayDate =tg.body.interpreted["records"][int(setdayrc)]["value"]
                     
-                    if  False: #"NONE" in Units :
-                        self.Telegrams.remove(telegram)
-                        continue
-                if hitted == 1:
-                    for single in self.Mbresults:
-                        if rdecoded["ID"] in single.values():
-                            exist = 1
-                            if int(recordnumberc) == -1 :
-                                pass
-                            else :
-                                single["CurrentValue"] = CurrentValue
-                            if  int(lastrecivedrecordc) == -1 :
-                                pass
-                            else :
-                                single["LastRecived"] = LastRecived
-                            if setdayvaluerc == -1 :
-                                pass
-                            else :
-                                single["SetDayValue"] = SetDayValue
-                            if setdayrc == -1 :
-                                pass
-                            else :
-                                single["SetDay"] = SetDayDate  
-                            self.Telegrams.remove(telegram)
-                            break     
                     
-                if exist == 0:
+                    
+            
                     self.Mbresults.append(rdecoded)
                     position = position +1 
             except:
-                #raise
+                raise
                 print("Exception in " + telegram)
                 self.Telegrams.remove(telegram)
                 
@@ -932,6 +911,7 @@ class Modem:
         return int(setdayhex,16),int(currenthex,16)
     
     def decrypt566(self,telegram,key):
+
         debug = 0
         AESK=binascii.unhexlify(key)
         AESBLK = self.getencriptedblocks(telegram)
@@ -962,3 +942,160 @@ class Modem:
                 print( "Blocco Decriptato: " + C.replace("0x","").upper())
             results.append(C.replace("0x","").upper())
         return results
+
+
+    def DoRepReding(self,readingfile,type):
+        
+        if type == "AMR":
+                
+            fin = codecs.open(readingfile,"r","latin1")
+            rep = fin.read()
+            buff = rep.split("\n")        
+            linecount = 0
+            for line in buff:
+                
+                linecount= linecount +1
+                if linecount > 5:
+                  
+                    rdecoded = {}
+                    
+                    if len(line) < 2:
+                        continue
+                    self.Telegrams.append(line)
+                    singlebuff = line.split("\t")
+                    if singlebuff[14] == "14": #antenne
+                        if debug == 1:
+                            print(line)
+                        
+                        meter = singlebuff[4]
+                        rdecoded["ID"] = meter
+                        
+                        status = singlebuff[7]
+                        rdecoded["Status"] = status
+                        
+                        currentvalue = singlebuff[10]
+                        rdecoded["CurrentValue"] = currentvalue
+                        
+                        Units =  singlebuff[11]
+                        rdecoded["Units"] = Units
+
+                        LastRecived = singlebuff[2]
+                        rdecoded["LastRecived"] = LastRecived
+
+                        SetDayValue = singlebuff[15]
+                        rdecoded["SetDayValue"] = ""
+
+                        SetDay = singlebuff[17]
+                        rdecoded["SetDay"] = ""
+                        pass
+                    else:
+                        if debug == 1:
+                            print(line)
+                        
+                        meter = singlebuff[4]
+                        rdecoded["ID"] = meter
+                        
+                        status = singlebuff[7]
+                        rdecoded["Status"] = status
+                        
+                        currentvalue = singlebuff[10]
+                        rdecoded["CurrentValue"] = currentvalue
+                        
+                        Units =  singlebuff[11]
+                        if "HCA" in Units:
+                            rdecoded["Units"] = "MeasureUnit.HCA"
+                        else:
+                            rdecoded["Units"] = Units
+
+                        LastRecived = singlebuff[2]
+                        rdecoded["LastRecived"] = LastRecived
+
+                        SetDayValue = singlebuff[15]
+                        rdecoded["SetDayValue"] = SetDayValue
+
+                        SetDay = singlebuff[17]
+                        rdecoded["SetDay"] = SetDay
+
+                    self.Mbresults.append(rdecoded)
+
+
+
+
+                   
+                    fin.close
+                    
+        
+        
+
+    def DoCsvReading(self,readingfile,type):
+        fin = codecs.open(readingfile,"r","latin1")
+        rep = fin.read()
+        buff = rep.split("\n")        
+        
+
+        if type == "556":
+            linecount = 0
+            for line in buff:
+                linecount = linecount +1
+                if linecount >2:
+                    if len(line) < 2:
+                        continue
+                    rdecoded = {}
+                    
+                    singlebuff = line.split(";")
+                    
+                    if not "OK" in singlebuff[4]:
+                        continue
+                    self.Telegrams.append(line)
+                    Meter = singlebuff[2]
+                    Stautus = singlebuff[9]
+                    CurrentValue = singlebuff[10]
+                    Units = "MeasureUnit.HCA"
+                    LastRecived = singlebuff[1]
+                    SetDayValue = singlebuff[11]
+                    SetDay = singlebuff[63]
+
+                    rdecoded["ID"] = Meter
+                    rdecoded["Status"] = Stautus
+                    rdecoded["CurrentValue"] = CurrentValue
+                    rdecoded["Units"] = Units
+                    rdecoded["LastRecived"] = LastRecived
+                    rdecoded["SetDayValue"] = SetDayValue
+                    rdecoded["SetDay"] = SetDay
+                    self.Mbresults.append(rdecoded)
+
+        if type == "566":
+            linecount = 0
+            for line in buff:
+                linecount = linecount +1
+                if linecount >2:
+                    if len(line) < 2:
+                        continue
+                    rdecoded = {}
+                    
+                    singlebuff = line.split(";")
+                    
+                    if not "OK" in singlebuff[4]:
+                        continue
+                    self.Telegrams.append(line)
+                    Meter = singlebuff[2]
+                    Stautus = singlebuff[11]
+                    CurrentValue = singlebuff[19]
+                    Units = "MeasureUnit.HCA"
+                    LastRecived = singlebuff[1]
+                    SetDayValue = singlebuff[18]
+                    SetDay = singlebuff[17]
+
+                    rdecoded["ID"] = Meter
+                    rdecoded["Status"] = Stautus
+                    rdecoded["CurrentValue"] = CurrentValue
+                    rdecoded["Units"] = Units
+                    rdecoded["LastRecived"] = LastRecived
+                    rdecoded["SetDayValue"] = SetDayValue
+                    rdecoded["SetDay"] = SetDay
+                    self.Mbresults.append(rdecoded)
+
+
+       
+     
+    
