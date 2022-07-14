@@ -116,7 +116,7 @@ def ArchiveAllBycondId(condid):
     server = 'tcp:linux' 
     database = 'Ticket' 
     username = 'sa' 
-    password = '1!Spikazzo11' 
+    password = '' 
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password+';encrypt=no')
     cursor = cnxn.cursor()
     sql = "UPDATE TicketTest set Stato = 'A' WHERE CondID = " + str(condid) + " AND ((Stato <> 'F' AND Stato <> 'L') or Stato is Null)"
@@ -132,7 +132,7 @@ def ToSql(meter,condata):
     server = 'tcp:linux' 
     database = 'Ticket' 
     username = 'sa' 
-    password = '1!Spikazzo11' 
+    password = '' 
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password+';encrypt=no')
     cursor = cnxn.cursor()
 
