@@ -213,8 +213,8 @@ class Modem:
                 if (not self.extractmeterfromtelegram(telegram) in ExceptSpecialConf) and self.Special != "0":
                     
                     
-                    if self.Special =="7x9cf2imp" and  (tg.body.bodyHeader.interpreted["medium"] == "0x4" or tg.body.bodyHeader.interpreted["medium"] == "0xc")  :
-                        #exit(0)
+                    if self.Special =="7x9cf2imp" and  (tg.body.bodyHeader.interpreted["medium"] == "0x4" or tg.body.bodyHeader.interpreted["medium"] == "0xc" or tg.body.bodyHeader.interpreted["medium"] == "0xd"):
+                        
                         if tg.body.interpreted["records"][0]['type'] == 'VIFUnitExt.RSSI':
                             #Main energy
                             ID = tg.body.bodyHeader.interpreted['identification']
@@ -284,10 +284,12 @@ class Modem:
                             position = position +1 
                             self.Mbresults.append(rdecodedin2)
                             self.Telegrams.insert(position,telegram+"imp2")
+                            continue
                             
                         else:
                             self.Telegrams.remove(telegram)
-                    elif self.Special =="7x9c2imp" and  (tg.body.bodyHeader.interpreted["medium"] == "0x4" or tg.body.bodyHeader.interpreted["medium"] == "0xc") :
+                            continue
+                    elif self.Special =="7x9c2imp" and  (tg.body.bodyHeader.interpreted["medium"] == "0x4" or tg.body.bodyHeader.interpreted["medium"] == "0xc" or tg.body.bodyHeader.interpreted["medium"] == "0xd") :
                             
                         if tg.body.interpreted["records"][0]['type'] == 'VIFUnitExt.RSSI':
                             #Main energy
@@ -341,15 +343,17 @@ class Modem:
                             position = position +1 
                             self.Mbresults.append(rdecodedin2)
                             self.Telegrams.insert(position,telegram+"imp2")
+                            continue
 
                         else:
                             self.Telegrams.remove(telegram)
+                            continue
 
                     else:
                         print("Removing Telegram Sontex " + telegram)
                         self.Telegrams.remove(telegram)
                         
-                    #continue
+                        continue
 
 
                 #exit(0)

@@ -116,7 +116,7 @@ def ArchiveAllBycondId(condid):
     server = 'tcp:linux' 
     database = 'Ticket' 
     username = 'sa' 
-    password = '' 
+    password = '1!Spikazzo11' 
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password+';encrypt=no')
     cursor = cnxn.cursor()
     sql = "UPDATE TicketTest set Stato = 'A' WHERE CondID = " + str(condid) + " AND ((Stato <> 'F' AND Stato <> 'L') or Stato is Null)"
@@ -132,7 +132,7 @@ def ToSql(meter,condata):
     server = 'tcp:linux' 
     database = 'Ticket' 
     username = 'sa' 
-    password = '' 
+    password = '1!Spikazzo11' 
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password+';encrypt=no')
     cursor = cnxn.cursor()
 
@@ -324,7 +324,7 @@ def getmetersinerrorfromdict(meterlist , meterdict,type,today):
     return results
 
             
-def isOkDestFolder(condata):
+def isOkDestFolder(condata,basedir = "./PROVINCE/"):
     import glob
     debug =0
     basedir = "./ALBERATURA/"
